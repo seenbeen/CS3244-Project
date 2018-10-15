@@ -18,7 +18,7 @@ class Animation:
 		self.interval = interval/self.frameCount # Wait between frames
 		self.shouldLoop = shouldLoop
 
-		self.lastFrame = cTime() # Creation time
+		self.lastFrame = 0 # Creation time
 		self.currentIndex = -1 # There will be an step right away, counter act it
 		self.frame = self.frames[self.currentIndex] # Start off current frame
 		self.looped = False # Has made a complete loop

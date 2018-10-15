@@ -153,6 +153,15 @@ textures = {
 	}
 }
 
+class BlankSound:
+        def play(self):
+                pass
+        def stop(self):
+                pass
+
+def loadSound(*args):
+        return BlankSound()
+
 # Load all sounds we need
 sounds = {
 	"pop": loadSound("pop.wav"),
@@ -192,7 +201,7 @@ fonts = {
 running = True
 while running:
 	# Start by playing the title screen music
-	playMusic("titleScreenLoop.ogg", intro="titleScreenIntro.ogg")
+	#playMusic("titleScreenLoop.ogg", intro="titleScreenIntro.ogg")
 
 	# Begin menu
 	characterType, controls, floorSeed = menu(screen, jController, sounds,nextSong, changeSong)
@@ -208,11 +217,11 @@ while running:
 
 	# Play the choir noise when the user chooses a level
 	# and show the random symboly 
-	playMusic("titleScreenJingle.ogg")
+	#playMusic("titleScreenJingle.ogg")
 	showSymbol(screen, 4, randint(0, 55), textures)
 
 	# Play the normal game music
-	playMusic("basementLoop.ogg", intro="basementIntro.ogg")
+	#playMusic("basementLoop.ogg", intro="basementIntro.ogg")
 
 	# Start game
 	game = Game(characterType, controls, floorSeed)

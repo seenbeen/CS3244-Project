@@ -142,7 +142,7 @@ class Game:
 		while running:
 
 			currTime = cTime()
-			k = key.get_pressed() # Current down keys
+			#k = key.get_pressed() # Current down keys
 
 			for e in event.get():
 				if e.type == QUIT:

@@ -133,7 +133,7 @@ class TrainerGame:
 
 		self.updateMinimap(self.currentRoom)
 
-	def advanceFrame(self):
+	def advanceFrame(self, events):
 		self.currTime += 1/60.0
 		currTime = self.currTime
 		isaac = self.isaac
@@ -143,11 +143,8 @@ class TrainerGame:
 		mHeight = self.minimap.get_height()
 		posMoves = self.posMoves
 
-		for e in event.get():
-			if e.type == QUIT:
-				self.status = -2
-
-			elif e.type == KEYDOWN:
+		for e in events:
+			if e.type == KEYDOWN:
 				# Update key value
 				isaac.moving(e.key, True, False)
 
@@ -245,7 +242,9 @@ class TrainerGame:
 class Trainer:
 	def __init__(self, screen):
 		self.screen = screen
-		
+
+		self.controlStruct = ControlStruct()
+
 		# Load all needed textures
 		self.textures = {
 			"hearts": loadTexture("hearts.png"),
@@ -358,14 +357,59 @@ class Trainer:
 					self.screen, self.sounds, self.textures,
 					self.fonts)
 
-	def advanceFrame(self, inputs):
-		self.game.advanceFrame()
+	def advanceFrame(self):
+		self.game.advanceFrame(self.controlStruct.flush())
 		hp = sum(map(lambda x: x.health ,self.game.isaac.hearts))
 		return FrameData(self.screen, hp)
 	
 	def getSimulationStatus(self):
 		return self.game.getStatus()
 
+	MOVE_LEFT = 97
+	MOVE_RIGHT = 100
+	MOVE_UP = 119
+	MOVE_DOWN = 115
+	SHOOT_LEFT = 276
+	SHOOT_RIGHT = 275
+	SHOOT_UP = 273
+	SHOOT_DOWN = 274
+
+	def sendPushKeyEvent(self, k):
+		self.controlStruct.pushKey(k)
+
+
+class FakeEvent:
+	def __init__(self, t, v):
+		self.type = t
+		self.key = v
+		
+class ControlStruct:
+	CONTROLS = [97,100,119,115,276,275,273,274]
+
+	def __init__(self):
+		self.keys = { c : False for c in ControlStruct.CONTROLS }
+		self.prev_keys = { c : False for c in ControlStruct.CONTROLS }
+		self.events = []
+
+	def pushKey(self, c):
+		self.keys[c] = True
+
+	def flush(self):
+		events = self.events
+		for c in self.CONTROLS:
+			if self.keys[c] != self.prev_keys[c]:
+				if self.keys[c]:
+					events.append(FakeEvent(KEYDOWN, c))
+				else:
+					events.append(FakeEvent(KEYUP, c))
+
+		self.prev_keys = { c : self.keys[c] for c in ControlStruct.CONTROLS }
+		self.keys = { c : False for c in ControlStruct.CONTROLS }
+
+		self.events = []
+
+		return events
+		
 class FrameData:
 	def __init__(self, surface, isaac_hp):
 		self.surface = surface

@@ -18,7 +18,7 @@ def TestTrainer():
 	trainerBinding = Trainer(surf)
 
 	#restart
-	trainerBinding.initializeGame("ASDFASDF")
+	trainerBinding.initializeGame("ASDFASDF",startAtBoss=True)
 	clock = time.Clock()
 	actions = 8
 	brain = BrainDQN(actions)
@@ -39,17 +39,17 @@ def TestTrainer():
 	observation0 = cv2.cvtColor(cv2.resize(observation0, (80, 80)), cv2.COLOR_BGR2GRAY)
 	ret, observation0 = cv2.threshold(observation0,1,255,cv2.THRESH_BINARY)
 	brain.setInitState(observation0)
-	lastHP = 6
+	lastIsaacHP = frameData0.isaac_hp
+	lastBossHP = frameData0.boss_hp
 
     #start trainings
 	running = True
-	while running and trainerBinding.getSimulationStatus() == 0:
+	while running:
 		# a harness for computer input, detects when the x
 		# on the window has been clicked and exits accordingly
 		for evt in event.get():
 			if evt.type == QUIT:
 				running = False;
-
 		# a harness for computer input, detects all keyboard keys
 		# - you can remove this and just have the agent send
 		# these events :)
@@ -58,10 +58,20 @@ def TestTrainer():
 		trainerBinding.sendPushKeyEvent(currentAction)
 		# advance the simulation
 		frameData = trainerBinding.advanceFrame()
-		currentHP = frameData.isaac_hp
-		reward = getReward(currentHP, lastHP)
-		lastHP = currentHP
-		terminal = terminalState(trainerBinding.getSimulationStatus)
+		#get hp and get reward
+		currentIsaacHP = frameData.isaac_hp
+		currentBossHP = frameData.boss_hp
+		if currentBossHP == 1:
+		    trainerBinding.initializeGame("ASDFASDF",startAtBoss=True)
+		reward = getReward(currentIsaacHP, lastIsaacHP, currentBossHP, lastBossHP)
+		print("Reward", reward)
+		lastIsaacHP = currentIsaacHP
+		lastBossHP = currentBossHP
+		#get terminal state
+		terminal = terminalState(trainerBinding.getSimulationStatus())
+		if terminal == True:
+	                trainerBinding.initializeGame("ASDFASDF",startAtBoss=True)
+		#train
 		nextObservation = surfarray.array3d(frameData.surface)
 		nextObservation = preprocess(nextObservation)
 		brain.setPerception(nextObservation,action,reward,terminal)
@@ -79,8 +89,10 @@ def terminalState(terminal):
 		return True
 	return False
 
-def getReward(HP, lastHP):
-	if HP < lastHP:
+def getReward(isaacHP, isaacLastHP, bossHP, bossLastHP):
+	if bossHP < bossLastHP:
+		return 1
+	if isaacHP < isaacLastHP:
 		return -1
 	return 0
 

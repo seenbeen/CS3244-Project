@@ -6,7 +6,7 @@ def TestTrainer():
 	screen = display.set_mode((WIDTH, HEIGHT))
 	surf = Surface((WIDTH, HEIGHT))
 	trainerBinding = Trainer(surf)
-	trainerBinding.initializeGame("ASDFASDF")
+	trainerBinding.initializeGame("ASDFASDF", startAtBoss=True)
 	clock = time.Clock()
 
 	running = True

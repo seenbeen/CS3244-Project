@@ -239,6 +239,17 @@ class TrainerGame:
 	def getStatus(self):
 		return self.status
 
+	def goToBoss(self):
+		self.currentRoom = [c for c in self.floor if self.floor[c].variant == 2][0] 
+
+	def getBossHP(self):
+		if self.floor[self.currentRoom].variant == 2:
+			if self.floor[self.currentRoom].enemies:
+				return self.floor[self.currentRoom].enemies[0].health
+			else:
+				return 0
+		return -1
+
 class Trainer:
 	def __init__(self, screen):
 		self.screen = screen
@@ -351,16 +362,19 @@ class Trainer:
 			"ticks": loadCFont("ticks.png", 4, 17 , 8),
 		}
 
-	def initializeGame(self, seed):
+	def initializeGame(self, seed, startAtBoss):
 		controls = [97,100,119,115,276,275,273,274,113,101]
 		self.game = TrainerGame(0, controls, seed,
 					self.screen, self.sounds, self.textures,
 					self.fonts)
+		if startAtBoss:
+			self.game.goToBoss()
 
 	def advanceFrame(self):
 		self.game.advanceFrame(self.controlStruct.flush())
 		hp = sum(map(lambda x: x.health ,self.game.isaac.hearts))
-		return FrameData(self.screen, hp)
+		boss_hp = self.game.getBossHP()
+		return FrameData(self.screen, hp, boss_hp)
 	
 	def getSimulationStatus(self):
 		return self.game.getStatus()
@@ -411,6 +425,7 @@ class ControlStruct:
 		return events
 		
 class FrameData:
-	def __init__(self, surface, isaac_hp):
+	def __init__(self, surface, isaac_hp, boss_hp):
 		self.surface = surface
 		self.isaac_hp = isaac_hp
+		self.boss_hp = boss_hp # note: -1 = not a boss room

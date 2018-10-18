@@ -8,7 +8,6 @@ from BrainDQN_Nature import BrainDQN
 
 def preprocess(observation):
 	observation = cv2.cvtColor(cv2.resize(observation, (80, 80)), cv2.COLOR_BGR2GRAY)
-	ret, observation = cv2.threshold(observation,1,255,cv2.THRESH_BINARY)
 	return np.reshape(observation,(80,80,1))
 
 def TestTrainer():

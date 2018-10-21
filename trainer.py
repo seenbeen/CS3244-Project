@@ -75,7 +75,7 @@ def TestTrainer():
 		if currentBossHP == 0:
 			score = score + 1
 			epochs = epochs + 1
-			if score = 1:
+			if score == 1:
 				winEpoch = epochs
 		    trainerBinding.initializeGame("ASDFASDF",startAtBoss=True)
 		# get reward

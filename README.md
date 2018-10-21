@@ -1,7 +1,8 @@
 binding-of-isaac
 ================
 
-ICS3U final project.
+CS3244 project, reproduce DQN on this game.
+game code is from ICS3U final project.
 
 
 ![Title Screen](https://raw.githubusercontent.com/ExPHAT/binding-of-isaac/master/screenshots/title.png)
@@ -13,13 +14,13 @@ ICS3U final project.
 
 Setup
 -----
-
+Ensure you have numpy, opencv, tensorflow
 Ensure you have the `pygame` module installed for Python 3.
 
 
 Running
 -------
-
+Run 'trainer.py' to train
 Run `main.py`
 
 

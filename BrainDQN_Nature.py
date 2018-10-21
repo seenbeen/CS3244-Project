@@ -10,15 +10,15 @@ import random
 from collections import deque 
 
 # Hyper Parameters:
-FRAME_PER_ACTION = 1
+FRAME_PER_ACTION = 4
 GAMMA = 0.99 # decay rate of past observations
 OBSERVE = 100. # timesteps to observe before training
 EXPLORE = 200000. # frames over which to anneal epsilon
-FINAL_EPSILON = 0.001#0.001 # final value of epsilon
+FINAL_EPSILON = 0.05#0.001 # final value of epsilon
 INITIAL_EPSILON = 0.99#0.01 # starting value of epsilon
 REPLAY_MEMORY = 50000 # number of previous transitions to remember
 BATCH_SIZE = 32 # size of minibatch
-UPDATE_TIME = 100
+UPDATE_TIME = 10000
 
 try:
     tf.mul
@@ -37,6 +37,7 @@ class BrainDQN:
 		self.timeStep = 0
 		self.epsilon = INITIAL_EPSILON
 		self.actions = actions
+		self.lastActionIndex = 0
 		# init Q network
 		self.stateInput,self.QValue,self.W_conv1,self.b_conv1,self.W_conv2,self.b_conv2,self.W_conv3,self.b_conv3,self.W_fc1,self.b_fc1,self.W_fc2,self.b_fc2 = self.createQNetwork()
 
@@ -104,7 +105,7 @@ class BrainDQN:
 		self.yInput = tf.placeholder("float", [None]) 
 		Q_Action = tf.reduce_sum(tf.mul(self.QValue, self.actionInput), reduction_indices = 1)
 		self.cost = tf.reduce_mean(tf.square(self.yInput - Q_Action))
-		self.trainStep = tf.train.AdamOptimizer(1e-6).minimize(self.cost)
+		self.trainStep = tf.train.AdamOptimizer(1e-5).minimize(self.cost)
 
 
 	def trainQNetwork(self):
@@ -147,7 +148,7 @@ class BrainDQN:
 		self.replayMemory.append((self.currentState,action,reward,newState,terminal))
 		if len(self.replayMemory) > REPLAY_MEMORY:
 			self.replayMemory.popleft()
-		if self.timeStep > OBSERVE:
+		if self.timeStep > OBSERVE and self.timeStep % 4 == 0:
 			# Train the network
 			self.trainQNetwork()
 
@@ -173,12 +174,14 @@ class BrainDQN:
 		if self.timeStep % FRAME_PER_ACTION == 0:
 			if random.random() <= self.epsilon:
 				action_index = random.randrange(self.actions)
+				self.lastActionIndex = action_index
 				action[action_index] = 1
 			else:
 				action_index = np.argmax(QValue)
+				self.lastActionIndex = action_index
 				action[action_index] = 1
 		else:
-			action[0] = 1 # do nothing
+			action[self.lastActionIndex] = 1 # keep doing the last action
 
 		# change episilon
 		if self.epsilon > FINAL_EPSILON and self.timeStep > OBSERVE:

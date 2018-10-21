@@ -1,3 +1,9 @@
+# -----------------------------
+# File: train Isaac AI
+# Author: Yizhuo, Eugene
+# Date: 2018.10.21
+# -----------------------------
+
 from pygame import *
 from trainerbinding import *
 import numpy as np
@@ -6,6 +12,7 @@ import sys
 sys.path.append("game/")
 from BrainDQN_Nature import BrainDQN
 
+# preprocess input frame, resize to 80*80 and to grayscale
 def preprocess(observation):
 	observation = cv2.cvtColor(cv2.resize(observation, (80, 80)), cv2.COLOR_BGR2GRAY)
 	return np.reshape(observation,(80,80,1))
@@ -16,7 +23,7 @@ def TestTrainer():
 	surf = Surface((WIDTH, HEIGHT))
 	trainerBinding = Trainer(surf)
 
-	#restart
+	# start game, create DQN
 	trainerBinding.initializeGame("ASDFASDF",startAtBoss=True)
 	clock = time.Clock()
 	actions = 8
@@ -30,8 +37,8 @@ def TestTrainer():
 	  Trainer.SHOOT_UP,
 	  Trainer.SHOOT_DOWN]
     
-    #initialize first state
-	action0 = np.array([0,0,0,0,1,0,0,0])
+    # initialize first state
+	action0 = np.array([1,0,0,0,0,0,0,0])
 	trainerBinding.sendPushKeyEvent(actionList[np.argmax(action0)])
 	frameData0 = trainerBinding.advanceFrame()
 	observation0 = surfarray.array3d(frameData0.surface)
@@ -43,34 +50,44 @@ def TestTrainer():
 
     #start trainings
 	running = True
+	score = 0
+	epochs = 0
+	winEpoch = 0
 	while running:
+		# print current epoch and score
+		print("epoch", epochs, "/ score", score)
 		# a harness for computer input, detects when the x
 		# on the window has been clicked and exits accordingly
 		for evt in event.get():
 			if evt.type == QUIT:
+				print("first win epoch", winEpoch)
 				running = False;
-		# a harness for computer input, detects all keyboard keys
-		# - you can remove this and just have the agent send
-		# these events :)
+		# get action from the DQN
 		action = brain.getAction()
 		currentAction = actionList[np.argmax(action)]
 		trainerBinding.sendPushKeyEvent(currentAction)
 		# advance the simulation
 		frameData = trainerBinding.advanceFrame()
-		#get hp and get reward
+		# get hp
 		currentIsaacHP = frameData.isaac_hp
 		currentBossHP = frameData.boss_hp
-		if currentBossHP == 1:
+		# if boss is dead, restart game and update score and epochs
+		if currentBossHP == 0:
+			score = score + 1
+			epochs = epochs + 1
+			if score = 1:
+				winEpoch = epochs
 		    trainerBinding.initializeGame("ASDFASDF",startAtBoss=True)
+		# get reward
 		reward = getReward(currentIsaacHP, lastIsaacHP, currentBossHP, lastBossHP)
-		print("Reward", reward)
 		lastIsaacHP = currentIsaacHP
 		lastBossHP = currentBossHP
-		#get terminal state
+		# get terminal state, if terminal, restart game and update epochs
 		terminal = terminalState(trainerBinding.getSimulationStatus())
 		if terminal == True:
+			epochs = epochs + 1
 	                trainerBinding.initializeGame("ASDFASDF",startAtBoss=True)
-		#train
+		# train
 		nextObservation = surfarray.array3d(frameData.surface)
 		nextObservation = preprocess(nextObservation)
 		brain.setPerception(nextObservation,action,reward,terminal)

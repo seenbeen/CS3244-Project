@@ -6,7 +6,17 @@ def TestTrainer():
 	screen = display.set_mode((WIDTH, HEIGHT))
 	surf = Surface((WIDTH, HEIGHT))
 	trainerBinding = Trainer(surf)
-	trainerBinding.initializeGame("ASDFASDF", startAtBoss=True)
+
+	# start options:
+	# Trainer.START_AT_BOSS
+	# Trainer.START_AT_MONSTER_ROOM
+	# None
+
+	# some interesting seeds for rooms:
+	# 2 maw enemies - FDSAFDSA
+	# flies - ASDFASDF
+
+	trainerBinding.initializeGame("ASDFASDF", startAt=Trainer.START_AT_MONSTER_ROOM)
 	clock = time.Clock()
 
 	running = True
@@ -36,11 +46,12 @@ def TestTrainer():
 
 		# advance the simulation
 		frameData = trainerBinding.advanceFrame()
-
+                # print ("%i, %i" % (frameData.has_room_changed, frameData.num_enemies))
 		# pull out some frame information
 		screen.blit(frameData.surface, (0, 0))
 		display.flip()
 		clock.tick(60)
+		
 	quit()
 		
 TestTrainer()

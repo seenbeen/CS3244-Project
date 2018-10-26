@@ -24,7 +24,7 @@ def TestTrainer():
 	trainerBinding = Trainer(surf)
 
 	# start game, create DQN
-	trainerBinding.initializeGame("ASDFASDF",startAtBoss=True)
+	trainerBinding.initializeGame("ASDFASDF",startAt=Trainer.START_AT_BOSS)
 	clock = time.Clock()
 	actions = 8
 	brain = BrainDQN(actions)
@@ -77,7 +77,7 @@ def TestTrainer():
 			epochs = epochs + 1
 			if score == 1:
 				winEpoch = epochs
-		    trainerBinding.initializeGame("ASDFASDF",startAtBoss=True)
+		    trainerBinding.initializeGame("ASDFASDF",startAt=Trainer.START_AT_BOSS)
 		# get reward
 		reward = getReward(currentIsaacHP, lastIsaacHP, currentBossHP, lastBossHP)
 		lastIsaacHP = currentIsaacHP
@@ -86,7 +86,7 @@ def TestTrainer():
 		terminal = terminalState(trainerBinding.getSimulationStatus())
 		if terminal == True:
 			epochs = epochs + 1
-	                trainerBinding.initializeGame("ASDFASDF",startAtBoss=True)
+			trainerBinding.initializeGame("ASDFASDF",startAt=Trainer.START_AT_BOSS)
 		# train
 		nextObservation = surfarray.array3d(frameData.surface)
 		nextObservation = preprocess(nextObservation)

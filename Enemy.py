@@ -101,10 +101,13 @@ class Enemy:
 
 		if self.isFlying:
 			return
+		try:
+			start, end = nodes[round(self.x)][round(self.y)], nodes[x][y]
 
-		start, end = nodes[round(self.x)][round(self.y)], nodes[x][y]
+			path = paths.search(start, end)
+		except:
+			path = None
 
-		path = paths.search(start, end)
 		if path is None:
 			# There is no path found to the character
 

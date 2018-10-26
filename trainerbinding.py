@@ -73,6 +73,7 @@ class TrainerGame:
 		self.isaac = isaac
 		self.animatingRooms = animatingRooms
 		self.screen = screen
+		self.startingRoom = self.currentRoom
 
 	def setup(self):
 		# Load floor with custom data
@@ -240,7 +241,8 @@ class TrainerGame:
 		return self.status
 
 	def goToBoss(self):
-		self.currentRoom = [c for c in self.floor if self.floor[c].variant == 2][0] 
+		self.currentRoom = [c for c in self.floor if self.floor[c].variant == 2][0]
+		self.startingRoom = self.currentRoom
 
 	def getBossHP(self):
 		if self.floor[self.currentRoom].variant == 2:
@@ -249,6 +251,19 @@ class TrainerGame:
 			else:
 				return 0
 		return -1
+
+	def getNumberEnemies(self):
+		return len(self.floor[self.currentRoom].enemies)
+	
+	def hasRoomChanged(self):
+		return self.currentRoom != self.startingRoom
+
+	def goToMonsterRoomFromSeed(self):
+		keys = list(self.floor.keys())
+		while (self.getNumberEnemies() == 0 or self.getBossHP() != -1):
+			shuffle(keys)
+			self.currentRoom = keys[0]
+		self.startingRoom = self.currentRoom
 
 class Trainer:
 	def __init__(self, screen):
@@ -362,19 +377,26 @@ class Trainer:
 			"ticks": loadCFont("ticks.png", 4, 17 , 8),
 		}
 
-	def initializeGame(self, seed, startAtBoss):
+	START_AT_BOSS = 1
+	START_AT_MONSTER_ROOM = 2
+	
+	def initializeGame(self, seed, startAt=None):
 		controls = [97,100,119,115,276,275,273,274,113,101]
 		self.game = TrainerGame(0, controls, seed,
 					self.screen, self.sounds, self.textures,
 					self.fonts)
-		if startAtBoss:
+		if startAt == Trainer.START_AT_BOSS:
 			self.game.goToBoss()
+		elif startAt == Trainer.START_AT_MONSTER_ROOM:
+			self.game.goToMonsterRoomFromSeed()
 
 	def advanceFrame(self):
 		self.game.advanceFrame(self.controlStruct.flush())
 		hp = sum(map(lambda x: x.health ,self.game.isaac.hearts))
 		boss_hp = self.game.getBossHP()
-		return FrameData(self.screen, hp, boss_hp)
+		has_room_changed = self.game.hasRoomChanged()
+		num_enemies = self.game.getNumberEnemies()
+		return FrameData(self.screen, hp, boss_hp, has_room_changed, num_enemies)
 	
 	def getSimulationStatus(self):
 		return self.game.getStatus()
@@ -425,7 +447,9 @@ class ControlStruct:
 		return events
 		
 class FrameData:
-	def __init__(self, surface, isaac_hp, boss_hp):
+	def __init__(self, surface, isaac_hp, boss_hp, has_room_changed, num_enemies):
 		self.surface = surface
 		self.isaac_hp = isaac_hp
 		self.boss_hp = boss_hp # note: -1 = not a boss room
+		self.has_room_changed = has_room_changed
+		self.num_enemies = num_enemies

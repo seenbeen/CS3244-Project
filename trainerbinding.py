@@ -396,7 +396,8 @@ class Trainer:
 		boss_hp = self.game.getBossHP()
 		has_room_changed = self.game.hasRoomChanged()
 		num_enemies = self.game.getNumberEnemies()
-		return FrameData(self.screen, hp, boss_hp, has_room_changed, num_enemies)
+		pos = (self.game.isaac.x, self.game.isaac.y)
+		return FrameData(self.screen, hp, boss_hp, has_room_changed, num_enemies, pos)
 	
 	def getSimulationStatus(self):
 		return self.game.getStatus()
@@ -447,9 +448,10 @@ class ControlStruct:
 		return events
 		
 class FrameData:
-	def __init__(self, surface, isaac_hp, boss_hp, has_room_changed, num_enemies):
+	def __init__(self, surface, isaac_hp, boss_hp, has_room_changed, num_enemies, position):
 		self.surface = surface
 		self.isaac_hp = isaac_hp
 		self.boss_hp = boss_hp # note: -1 = not a boss room
 		self.has_room_changed = has_room_changed
 		self.num_enemies = num_enemies
+		self.isaac_position = position

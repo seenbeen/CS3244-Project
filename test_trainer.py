@@ -46,7 +46,8 @@ def TestTrainer():
 
 		# advance the simulation
 		frameData = trainerBinding.advanceFrame()
-                # print ("%i, %i" % (frameData.has_room_changed, frameData.num_enemies))
+		# print ("%i, %i" % (frameData.has_room_changed, frameData.num_enemies))
+		# print (frameData.isaac_position)
 		# pull out some frame information
 		screen.blit(frameData.surface, (0, 0))
 		display.flip()

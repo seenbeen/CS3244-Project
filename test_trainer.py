@@ -16,7 +16,7 @@ def TestTrainer():
 	# 2 maw enemies - FDSAFDSA
 	# flies - ASDFASDF
 
-	trainerBinding.initializeGame("ASDFASDF", startAt=Trainer.START_AT_MONSTER_ROOM)
+	trainerBinding.initializeGame("fuck", startAt=Trainer.START_AT_MONSTER_ROOM)
 	clock = time.Clock()
 
 	running = True

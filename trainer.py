@@ -24,7 +24,8 @@ def TestTrainer():
 	trainerBinding = Trainer(surf)
 
 	# start game, create DQN
-	trainerBinding.initializeGame("ASDFASDF",startAt=Trainer.START_AT_BOSS)
+	#trainerBinding.initializeGame("ASDFASDF",startAt=Trainer.START_AT_MONSTER_ROOM)
+	start(trainerBinding)
 	clock = time.Clock()
 	actions = 8
 	brain = BrainDQN(actions)
@@ -46,7 +47,7 @@ def TestTrainer():
 	ret, observation0 = cv2.threshold(observation0,1,255,cv2.THRESH_BINARY)
 	brain.setInitState(observation0)
 	lastIsaacHP = frameData0.isaac_hp
-	lastBossHP = frameData0.boss_hp
+	lastNumEnemies = frameData0.num_enemies
 
     #start trainings
 	running = True
@@ -68,25 +69,30 @@ def TestTrainer():
 		trainerBinding.sendPushKeyEvent(currentAction)
 		# advance the simulation
 		frameData = trainerBinding.advanceFrame()
+		# if enter another room, restart
+		if frameData.has_room_changed:
+			start(trainerBinding)
 		# get hp
 		currentIsaacHP = frameData.isaac_hp
-		currentBossHP = frameData.boss_hp
+		currentNumEnemies = frameData.num_enemies
 		# if boss is dead, restart game and update score and epochs
-		if currentBossHP == 0:
+		if currentNumEnemies == 0:
 			score = score + 1
 			epochs = epochs + 1
 			if score == 1:
 				winEpoch = epochs
-		    trainerBinding.initializeGame("ASDFASDF",startAt=Trainer.START_AT_BOSS)
+				start(trainerBinding)
+				#trainerBinding.initializeGame("ASDFASDF",startAt=Trainer.START_AT_MONSTER_ROOM)
 		# get reward
-		reward = getReward(currentIsaacHP, lastIsaacHP, currentBossHP, lastBossHP)
+		reward = getReward(currentIsaacHP, lastIsaacHP, currentNumEnemies, lastNumEnemies)
 		lastIsaacHP = currentIsaacHP
-		lastBossHP = currentBossHP
+		lastNumEnemies = currentNumEnemies
 		# get terminal state, if terminal, restart game and update epochs
 		terminal = terminalState(trainerBinding.getSimulationStatus())
-		if terminal == True:
+		if terminal == True or reward == -1:
 			epochs = epochs + 1
-			trainerBinding.initializeGame("ASDFASDF",startAt=Trainer.START_AT_BOSS)
+			start(trainerBinding)
+			#trainerBinding.initializeGame("ASDFASDF",startAt=Trainer.START_AT_MONSTER_ROOM)
 		# train
 		nextObservation = surfarray.array3d(frameData.surface)
 		nextObservation = preprocess(nextObservation)
@@ -97,6 +103,9 @@ def TestTrainer():
 		clock.tick(60)
 	quit()
 
+def start(trainerBinding):
+	trainerBinding.initializeGame("fuck",startAt=Trainer.START_AT_MONSTER_ROOM)
+
 def main():                  
 	TestTrainer()
 
@@ -105,8 +114,8 @@ def terminalState(terminal):
 		return True
 	return False
 
-def getReward(isaacHP, isaacLastHP, bossHP, bossLastHP):
-	if bossHP < bossLastHP:
+def getReward(isaacHP, isaacLastHP, numEnemies, lastNumEnemies):
+	if numEnemies < lastNumEnemies:
 		return 1
 	if isaacHP < isaacLastHP:
 		return -1

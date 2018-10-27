@@ -303,7 +303,7 @@ class Trainer:
 			"overlays": [loadTexture("%i.png"%i, dir="overlays") for i in range(5)],
 			"shading": loadTexture("shading.png"),
 			"loading": [loadTexture("%i.png"%(i+1), dir="loading") for i in range(56)],
-			"pauseCard": loadTexture("pauseCard.png", dir="pause"),
+			"pauseCard": loadTexture("pausecard.png", dir="pause"),
 			"seedCard": loadTexture("seedcard.png", dir="pause"),
 			"arrow": loadTexture("arrow.png", dir="pause", double=False),
 			"pills": loadTexture("pills.png"),

@@ -187,7 +187,7 @@ class BrainDQN:
 		if self.epsilon > FINAL_EPSILON and self.timeStep > OBSERVE:
 			self.epsilon -= (INITIAL_EPSILON - FINAL_EPSILON)/EXPLORE
 
-		return action
+		return action, np.max(QValue)
 
 	def setInitState(self,observation):
 		self.currentState = np.stack((observation, observation, observation, observation), axis = 2)

@@ -4,7 +4,6 @@ import numpy as np
 
 data = np.genfromtxt('averageQValuesInEpochs.csv', delimiter='\t', skip_header=1)
 
-print(data)
 qValues = data[:,0]
 episodes = data[:,1]
 

@@ -4,7 +4,6 @@ import numpy as np
 
 data = np.genfromtxt('totalRewardsInEpochs.csv', delimiter='\t', skip_header=1, dtype=None)
 
-print(np.array(data))
 rewards = data[:,0]
 episodes = data[:,1]
 

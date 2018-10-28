@@ -12,12 +12,13 @@ import sys
 sys.path.append("game/")
 from BrainDQN_Nature import BrainDQN
 
-import atexit
 import csv
 
 # For storing visualisation data
 totalRewardsInEpochs = []
 averageQValuesInEpochs = []
+positions = []
+size = [WIDTH, HEIGHT]
 
 # preprocess input frame, resize to 80*80 and to grayscale
 def preprocess(observation):
@@ -62,7 +63,7 @@ def TestTrainer():
 	epochs = 0
 	winEpoch = 0
 
-	# Initialize total rewards in an episode
+	# Initialize variables used for visualizations
 	totalReward = 0
 	numQValues = 0
 	totalQValue = 0
@@ -84,6 +85,9 @@ def TestTrainer():
 		trainerBinding.sendPushKeyEvent(currentAction)
 		# advance the simulation
 		frameData = trainerBinding.advanceFrame()
+		# Record position
+		pos = np.array(frameData.isaac_position)
+		positions.append(np.round(pos, decimals=2))
 		# if enter another room, restart
 		if frameData.has_room_changed:
 			start(trainerBinding)
@@ -97,14 +101,14 @@ def TestTrainer():
 			if score == 1:
 				winEpoch = epochs
 
-				totalRewardsInEpochs.append(totalReward)
-				totalReward = 0
+			totalRewardsInEpochs.append(totalReward)
+			totalReward = 0
 
-				averageQValuesInEpochs.append(totalQValue/numQValues)
-				totalQValue = 0
-				numQValues = 0
+			averageQValuesInEpochs.append(totalQValue/numQValues)
+			totalQValue = 0
+			numQValues = 0
 
-				start(trainerBinding)
+			start(trainerBinding)
 				#trainerBinding.initializeGame("ASDFASDF",startAt=Trainer.START_AT_MONSTER_ROOM)
 		# get reward
 		reward = getReward(currentIsaacHP, lastIsaacHP, currentNumEnemies, lastNumEnemies)
@@ -113,7 +117,7 @@ def TestTrainer():
 		lastNumEnemies = currentNumEnemies
 		# get terminal state, if terminal, restart game and update epochs
 		terminal = terminalState(trainerBinding.getSimulationStatus())
-		if terminal == True or reward == -1:
+		if terminal == True: #or reward == -1:
 			epochs = epochs + 1
 
 			totalRewardsInEpochs.append(totalReward)
@@ -138,6 +142,7 @@ def TestTrainer():
 
 def start(trainerBinding):
 	trainerBinding.initializeGame("fuck",startAt=Trainer.START_AT_MONSTER_ROOM)
+	#trainerBinding.initializeGame("fuck",startAt=Trainer.START_AT_BOSS)
 
 def main():                  
 	TestTrainer()
@@ -166,6 +171,15 @@ def saveRewardData():
 		wr.writerow(['AverageQValue', 'Episode'])
 		for i in range(len(averageQValuesInEpochs)):
 			wr.writerow([averageQValuesInEpochs[i], i])
+
+	with open("visualizations/positions.csv", 'w') as f:
+		wr = csv.writer(f, delimiter='\t')
+		wr.writerow(['Map Width', 'Map Height'])
+		wr.writerow([size[0], size[1]])
+		wr.writerow(['Pos X', 'Pos Y'])
+		for i in range(len(positions)):
+			wr.writerow([positions[i][0], positions[i][1]])
+
 
 if __name__ == '__main__':
 	try:
